@@ -7,7 +7,6 @@ services:
     buildCommand: npm ci && npm run build
     startCommand: npm run start -- -H 0.0.0.0 -p $PORT
     healthCheckPath: /api/health
-    maxShutdownDelaySeconds: 180
     autoDeployTrigger: checksPass
     previews:
       generation: "off"
