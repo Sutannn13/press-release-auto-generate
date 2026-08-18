@@ -326,7 +326,6 @@ async function callModel(
   systemInstruction: string,
   contents: string,
   schema: typeof DRAFT_RESPONSE_SCHEMA | typeof FACT_AUDIT_SCHEMA,
-  temperature: number,
 ): Promise<string> {
   const targets = configuredTargets();
   let lastError: unknown;
@@ -355,7 +354,6 @@ async function callModel(
         contents,
         config: {
           systemInstruction,
-          temperature,
           maxOutputTokens: 6_144,
           responseMimeType: "application/json",
           responseJsonSchema: schema,
@@ -410,7 +408,7 @@ async function requestDraft(
   input: PressReleaseInput,
   warnings: string[],
 ): Promise<GeneratedPressRelease> {
-  const text = await callModel(SYSTEM_PROMPT, contents, DRAFT_RESPONSE_SCHEMA, 0.2);
+  const text = await callModel(SYSTEM_PROMPT, contents, DRAFT_RESPONSE_SCHEMA);
   return toGeneratedDraft(parseModelDraft(parseJson(text, "Gemini")), input, warnings);
 }
 
@@ -423,7 +421,6 @@ async function auditDraft(
     FACT_AUDITOR_SYSTEM_PROMPT,
     buildFactAuditPrompt(input, draft),
     FACT_AUDIT_SCHEMA,
-    0,
   );
   const audit = parseFactAudit(parseJson(text, "Auditor fakta"));
   const missing = audit.missingElements.map((key: ChecklistKey) => ({
