@@ -25,6 +25,10 @@ import {
 } from "./article";
 
 export const GEMINI_FLASH_MODEL = "gemini-3.6-flash";
+export const GEMINI_FALLBACK_MODEL = "gemini-3.5-flash-lite";
+
+const GEMINI_MODEL_PATTERN = /^gemini-[a-z0-9.-]+$/u;
+const RETRYABLE_API_STATUSES = new Set([408, 500, 502, 503, 504]);
 
 const DRAFT_RESPONSE_SCHEMA = {
   type: "object",
@@ -89,8 +93,8 @@ const FACT_AUDIT_SCHEMA = {
 } as const;
 
 export class GeminiConfigurationError extends Error {
-  constructor() {
-    super("GEMINI_API_KEY belum dikonfigurasi.");
+  constructor(message = "Credential Gemini belum dikonfigurasi.") {
+    super(message);
     this.name = "GeminiConfigurationError";
   }
 }
@@ -106,6 +110,13 @@ export class GeminiRateLimitError extends GeminiGenerationError {
   constructor(options?: ErrorOptions) {
     super("Batas permintaan Gemini sedang tercapai.", options);
     this.name = "GeminiRateLimitError";
+  }
+}
+
+export class GeminiUnavailableError extends GeminiGenerationError {
+  constructor(options?: ErrorOptions) {
+    super("Layanan Gemini sedang sibuk. Silakan coba lagi beberapa saat lagi.", options);
+    this.name = "GeminiUnavailableError";
   }
 }
 
@@ -239,10 +250,76 @@ function parseFactAudit(value: unknown): ModelFactAuditResponse {
   return value as unknown as ModelFactAuditResponse;
 }
 
-function apiKey(): string {
-  const value = process.env.GEMINI_API_KEY?.trim();
-  if (!value) throw new GeminiConfigurationError();
+interface GeminiCredential {
+  key: string;
+  label: "primary" | "backup-1" | "backup-2";
+}
+
+interface GeminiTarget extends GeminiCredential {
+  model: string;
+}
+
+export interface GeminiRoutingInfo {
+  credentialCount: number;
+  primaryModel: string;
+  fallbackModel: string;
+  targetCount: number;
+}
+
+function optionalEnvironment(name: string): string | null {
+  const value = process.env[name]?.trim();
+  return value || null;
+}
+
+function configuredModel(name: "GEMINI_MODEL_PRIMARY" | "GEMINI_MODEL_FALLBACK", fallback: string): string {
+  const value = optionalEnvironment(name) ?? fallback;
+  if (!GEMINI_MODEL_PATTERN.test(value)) {
+    throw new GeminiConfigurationError(`${name} tidak memiliki format model Gemini yang valid.`);
+  }
   return value;
+}
+
+function configuredCredentials(): GeminiCredential[] {
+  const values: Array<[GeminiCredential["label"], string | null]> = [
+    ["primary", optionalEnvironment("GEMINI_API_KEY_PRIMARY") ?? optionalEnvironment("GEMINI_API_KEY")],
+    ["backup-1", optionalEnvironment("GEMINI_API_KEY_BACKUP_1") ?? optionalEnvironment("GEMINI_API_KEY_BACKUP")],
+    ["backup-2", optionalEnvironment("GEMINI_API_KEY_BACKUP_2")],
+  ];
+  const seen = new Set<string>();
+  const credentials = values.flatMap(([label, key]) => {
+    if (!key || seen.has(key)) return [];
+    seen.add(key);
+    return [{ key, label }];
+  });
+  if (credentials.length === 0) throw new GeminiConfigurationError();
+  return credentials;
+}
+
+function configuredTargets(): GeminiTarget[] {
+  const credentials = configuredCredentials();
+  const primaryModel = configuredModel("GEMINI_MODEL_PRIMARY", GEMINI_FLASH_MODEL);
+  const fallbackModel = configuredModel("GEMINI_MODEL_FALLBACK", GEMINI_FALLBACK_MODEL);
+  const models = [...new Set([primaryModel, fallbackModel])];
+  const primaryTargets = models.map((model) => ({ ...credentials[0], model }));
+  const backupModel = models.at(-1) ?? primaryModel;
+  return [
+    ...primaryTargets,
+    ...credentials.slice(1).map((credential) => ({ ...credential, model: backupModel })),
+  ];
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
+}
+
+export function getGeminiRoutingInfo(): GeminiRoutingInfo {
+  const targets = configuredTargets();
+  return {
+    credentialCount: new Set(targets.map((target) => target.label)).size,
+    primaryModel: targets[0].model,
+    fallbackModel: targets[1]?.label === "primary" ? targets[1].model : targets[0].model,
+    targetCount: targets.length,
+  };
 }
 
 async function callModel(
@@ -251,26 +328,81 @@ async function callModel(
   schema: typeof DRAFT_RESPONSE_SCHEMA | typeof FACT_AUDIT_SCHEMA,
   temperature: number,
 ): Promise<string> {
-  const client = new GoogleGenAI({ apiKey: apiKey() });
-  try {
-    const response = await client.models.generateContent({
-      model: GEMINI_FLASH_MODEL,
-      contents,
-      config: {
-        systemInstruction,
-        temperature,
-        maxOutputTokens: 6_144,
-        responseMimeType: "application/json",
-        responseJsonSchema: schema,
+  const targets = configuredTargets();
+  let lastError: unknown;
+  let rejectedCredential: GeminiCredential["label"] | null = null;
+
+  for (let index = 0; index < targets.length; index += 1) {
+    const target = targets[index];
+    if (target.label === rejectedCredential) continue;
+    const client = new GoogleGenAI({
+      apiKey: target.key,
+      httpOptions: {
+        timeout: 45_000,
+        retryOptions: {
+          attempts: 1,
+          initialDelay: 1,
+          maxDelay: 4,
+          expBase: 2,
+          jitter: 0.5,
+          httpStatusCodes: [408, 429, 500, 502, 503, 504],
+        },
       },
     });
-    if (!response.text) throw new GeminiGenerationError("Gemini tidak mengembalikan teks.");
-    return response.text;
-  } catch (error) {
-    if (error instanceof GeminiGenerationError) throw error;
-    if (error instanceof ApiError && error.status === 429) throw new GeminiRateLimitError({ cause: error });
-    throw new GeminiGenerationError("Permintaan ke Gemini gagal. Silakan coba lagi.", { cause: error });
+    try {
+      const response = await client.models.generateContent({
+        model: target.model,
+        contents,
+        config: {
+          systemInstruction,
+          temperature,
+          maxOutputTokens: 6_144,
+          responseMimeType: "application/json",
+          responseJsonSchema: schema,
+        },
+      });
+      if (!response.text) throw new GeminiGenerationError("Gemini tidak mengembalikan teks.");
+      return response.text;
+    } catch (error) {
+      if (error instanceof GeminiGenerationError) throw error;
+      lastError = error;
+      if (isAbortError(error)) {
+        const next = targets[index + 1];
+        if (next?.label === target.label && next.model !== target.model) continue;
+        throw new GeminiUnavailableError({ cause: error });
+      }
+      if (!(error instanceof ApiError)) break;
+
+      if (error.status === 401 || error.status === 403) {
+        rejectedCredential = target.label;
+        continue;
+      }
+      if (error.status === 429) {
+        const next = targets[index + 1];
+        const mayTryAnotherModelInSameProject =
+          target.label === "primary" &&
+          next?.label === "primary" &&
+          next.model !== target.model;
+        if (mayTryAnotherModelInSameProject) continue;
+        throw new GeminiRateLimitError({ cause: error });
+      }
+      if (RETRYABLE_API_STATUSES.has(error.status)) {
+        const next = targets[index + 1];
+        if (next?.label === target.label && next.model !== target.model) continue;
+        throw new GeminiUnavailableError({ cause: error });
+      }
+      break;
+    }
   }
+
+  if (lastError instanceof ApiError && RETRYABLE_API_STATUSES.has(lastError.status)) {
+    throw new GeminiUnavailableError({ cause: lastError });
+  }
+  if (isAbortError(lastError)) throw new GeminiUnavailableError({ cause: lastError });
+  if (lastError instanceof ApiError && (lastError.status === 401 || lastError.status === 403)) {
+    throw new GeminiConfigurationError("Semua credential Gemini ditolak. Periksa key dan akses project.");
+  }
+  throw new GeminiGenerationError("Permintaan ke Gemini gagal. Silakan coba lagi.", { cause: lastError });
 }
 
 async function requestDraft(

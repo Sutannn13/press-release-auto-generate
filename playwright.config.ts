@@ -12,7 +12,7 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     browserName: "chromium",
-    channel: "msedge",
+    channel: process.env.CI ? undefined : "msedge",
     headless: true,
     trace: "retain-on-failure",
   },

@@ -84,10 +84,10 @@ Berdasarkan formula yang lo kasih, ini field-nya dipecah biar bisa diproses AI +
 
 ## 9. Non-Functional Requirements
 
-- **Biaya:** mengikuti free tier Vercel, Gemini, dan Upstash; tidak ada database aplikasi karena V2 stateless.
+- **Biaya:** mengikuti instance Render, penggunaan Gemini, dan Upstash; tidak ada database aplikasi karena V2 stateless.
 - **Kecepatan:** waktu mengikuti dua audit AI; UI harus menunjukkan status proses dan tidak mengulang tanpa batas.
 - **Reliability format:** file yang keluar harus selalu bisa dibuka normal di Word tanpa "repair document" warning.
-- **Akses:** dilindungi password sederhana (bukan sistem login kompleks) karena bakal di-deploy ke URL publik Vercel tapi cuma dipakai internal.
+- **Akses:** URL Render bersifat publik tetapi seluruh halaman dan API aplikasi dilindungi password bersama, sesi bertanda tangan, same-origin guard, dan rate-limit. Password produksi harus panjang dan unik.
 
 ## 10. Sinergi dengan Project Lain (catatan, bukan scope V2)
 

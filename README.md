@@ -2,6 +2,10 @@
 
 Tool internal Humas Kementerian Agama Kota Depok untuk mengubah fakta terstruktur 5W+1H menjadi draf press release yang diaudit, direview manusia, dan diekspor ke DOCX berformat resmi.
 
+## Deployment
+
+Target deployment utama adalah **Render Web Service Native Node.js** di region Singapura. Tidak diperlukan Docker di laptop maupun server milik pengguna. Blueprint bawaan memakai instance gratis untuk pilot; naikkan ke `starter` sebelum penggunaan produksi yang membutuhkan layanan selalu aktif. Panduan dari persiapan akun sampai smoke test ada di [DEPLOYMENT.md](./DEPLOYMENT.md).
+
 ## Fitur utama
 
 - Form 5W+1H inti dengan panel dinamis untuk bimbingan, lomba, upacara, pelayanan, rapat, dan kegiatan lain.
@@ -21,6 +25,10 @@ Tool internal Humas Kementerian Agama Kota Depok untuk mengubah fakta terstruktu
 3. Jalankan `npm run dev` lalu buka `http://localhost:3000`.
 
 `SESSION_SECRET` minimal 32 karakter. Login sengaja gagal dengan status 503 jika password, session secret, atau Redis belum dikonfigurasi.
+
+Endpoint `GET /api/health` dipakai hosting sebagai readiness check. Endpoint hanya mengembalikan `ok` atau `unavailable` dan tidak membuka nilai konfigurasi.
+
+Gemini memakai `GEMINI_API_KEY_PRIMARY` dengan maksimal dua credential cadangan. `gemini-3.6-flash` menjadi model utama dan `gemini-3.5-flash-lite` menjadi fallback. Saat timeout, `503`, atau `429`, sistem hanya mencoba model lain pada project yang sama. Credential cadangan dipakai jika key sebelumnya ditolak (`401/403`), bukan untuk melewati kuota free-tier.
 
 ## Verifikasi
 

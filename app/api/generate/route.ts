@@ -4,6 +4,7 @@ import {
   GeminiConfigurationError,
   GeminiGenerationError,
   GeminiRateLimitError,
+  GeminiUnavailableError,
   generatePressRelease,
 } from "@/lib/gemini";
 import { protectApi } from "@/lib/api-guard";
@@ -59,6 +60,10 @@ export async function POST(request: Request) {
     if (error instanceof GeminiRateLimitError) {
       safeLog(id, "generate", 429, startedAt, "gemini_rate_limited");
       return NextResponse.json({ error: error.message }, { status: 429, headers: { ...headers, "Retry-After": "60" } });
+    }
+    if (error instanceof GeminiUnavailableError) {
+      safeLog(id, "generate", 503, startedAt, "gemini_unavailable");
+      return NextResponse.json({ error: error.message }, { status: 503, headers: { ...headers, "Retry-After": "15" } });
     }
     if (error instanceof FactAuditError) {
       safeLog(id, "generate", 422, startedAt, "fact_audit_failed");

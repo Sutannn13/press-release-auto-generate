@@ -12,10 +12,14 @@ async function main() {
   process.env.RATE_LIMIT_TEST_MODE = "allow";
   process.env.SESSION_SECRET = "test-session-secret-that-is-at-least-32-characters";
   process.env.APP_ACCESS_PASSWORD = "test-password";
+  process.env.GEMINI_API_KEY_PRIMARY = "test-gemini-key";
+  process.env.UPSTASH_REDIS_REST_URL = "https://example.test";
+  process.env.UPSTASH_REDIS_REST_TOKEN = "test-redis-token";
 
-  const [{ POST: generate }, { POST: exportDocx }, { createSessionToken }] = await Promise.all([
+  const [{ POST: generate }, { POST: exportDocx }, { GET: health }, { createSessionToken }] = await Promise.all([
     import("../app/api/generate/route"),
     import("../app/api/export-docx/route"),
+    import("../app/api/health/route"),
     import("../lib/session"),
   ]);
   const cookie = `kemenag_session=${await createSessionToken()}`;
@@ -24,6 +28,15 @@ async function main() {
     Cookie: cookie,
     "X-Forwarded-For": "127.0.0.1",
   };
+
+  const ready = await health();
+  assert.equal(ready.status, 200);
+  assert.deepEqual(await ready.json(), { status: "ok" });
+  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+  const unavailableHealth = await health();
+  assert.equal(unavailableHealth.status, 503);
+  assert.deepEqual(await unavailableHealth.json(), { status: "unavailable" });
+  process.env.UPSTASH_REDIS_REST_TOKEN = "test-redis-token";
 
   const unauthorized = await generate(new Request("http://localhost/api/generate", {
     method: "POST",
@@ -89,7 +102,7 @@ async function main() {
   assert.equal(limited.status, 429);
   assert.ok(limited.headers.get("retry-after"));
 
-  console.log("API auth, origin, 422, rate-limit, foto wajib export, dan DOCX lulus.");
+  console.log("API health, auth, origin, 422, rate-limit, foto wajib export, dan DOCX lulus.");
 }
 
 main().catch((error: unknown) => {

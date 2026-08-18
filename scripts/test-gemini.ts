@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { parseGeneratedPressRelease, GEMINI_FLASH_MODEL, GeminiGenerationError } from "../lib/gemini";
+import {
+  GEMINI_FALLBACK_MODEL,
+  GEMINI_FLASH_MODEL,
+  GeminiGenerationError,
+  getGeminiRoutingInfo,
+  parseGeneratedPressRelease,
+} from "../lib/gemini";
 import { SYSTEM_PROMPT } from "../lib/prompt";
 import { validateDraftDeterministically } from "../lib/article";
 import { validatePressReleaseInput } from "../lib/validation";
@@ -56,8 +62,43 @@ const brusResponse = JSON.stringify({
 });
 
 assert.equal(GEMINI_FLASH_MODEL, "gemini-3.6-flash");
+assert.equal(GEMINI_FALLBACK_MODEL, "gemini-3.5-flash-lite");
 assert.match(SYSTEM_PROMPT, /Dilarang menambah nama/);
 assert.match(SYSTEM_PROMPT, /5 sampai 8/);
+
+const previousGeminiEnvironment = {
+  legacy: process.env.GEMINI_API_KEY,
+  primary: process.env.GEMINI_API_KEY_PRIMARY,
+  backup1: process.env.GEMINI_API_KEY_BACKUP_1,
+  backup2: process.env.GEMINI_API_KEY_BACKUP_2,
+  primaryModel: process.env.GEMINI_MODEL_PRIMARY,
+  fallbackModel: process.env.GEMINI_MODEL_FALLBACK,
+};
+process.env.GEMINI_API_KEY = "legacy-key-that-must-not-override-primary";
+process.env.GEMINI_API_KEY_PRIMARY = "primary-test-key";
+process.env.GEMINI_API_KEY_BACKUP_1 = "backup-one-test-key";
+process.env.GEMINI_API_KEY_BACKUP_2 = "backup-two-test-key";
+process.env.GEMINI_MODEL_PRIMARY = "gemini-3.6-flash";
+process.env.GEMINI_MODEL_FALLBACK = "gemini-3.5-flash-lite";
+assert.deepEqual(getGeminiRoutingInfo(), {
+  credentialCount: 3,
+  primaryModel: "gemini-3.6-flash",
+  fallbackModel: "gemini-3.5-flash-lite",
+  targetCount: 4,
+});
+Object.entries(previousGeminiEnvironment).forEach(([key, value]) => {
+  const names = {
+    legacy: "GEMINI_API_KEY",
+    primary: "GEMINI_API_KEY_PRIMARY",
+    backup1: "GEMINI_API_KEY_BACKUP_1",
+    backup2: "GEMINI_API_KEY_BACKUP_2",
+    primaryModel: "GEMINI_MODEL_PRIMARY",
+    fallbackModel: "GEMINI_MODEL_FALLBACK",
+  } as const;
+  const environmentName = names[key as keyof typeof names];
+  if (value === undefined) delete process.env[environmentName];
+  else process.env[environmentName] = value;
+});
 
 for (const input of [BRUS_INPUT, LOMBA_INPUT, GEBER_INPUT]) {
   assert.equal(validatePressReleaseInput(input).success, true);

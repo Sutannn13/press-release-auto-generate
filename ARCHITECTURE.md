@@ -6,9 +6,9 @@ Ada 3 opsi yang gw timbang:
 
 | Opsi | Plus | Minus |
 |---|---|---|
-| **Next.js web form** ✅ | Cocok stack lo (reuse skill Public Insight), deploy gratis di Vercel, bisa diakses dari HP/laptop mana aja, gampang dipakai kolega Humas lain | Perlu bikin UI form (tapi simpel, 1 halaman) |
+| **Next.js web form** ✅ | Bisa diakses dari HP/laptop, mudah dipakai kolega Humas, dan dapat dijalankan sebagai container di berbagai hosting | Perlu web service Node.js yang selalu menjaga secret di server |
 | CLI script lokal | Paling cepat dibikin, no hosting | Cuma bisa dipakai di laptop lo, kolega lain nggak bisa akses |
-| Discord bot | Fit sama kalimat "suruh ai/bot" & lo udah punya server Discord | Bot butuh proses yang nyala terus (persistent connection) — nggak cocok di Vercel serverless, butuh hosting terpisah (Railway/VPS) yang nambah kompleksitas buat value yang sama aja |
+| Discord bot | Cocok untuk trigger singkat | Membutuhkan proses persisten dan menambah permukaan akses dibanding web internal berpassword |
 
 **Keputusan: Next.js web form.** Kalau nanti kerasa kurang praktis, command Discord bisa ditambah belakangan sebagai "alternate trigger" yang manggil API yang sama — jadi nggak sia-sia.
 
@@ -19,7 +19,7 @@ Ada 3 opsi yang gw timbang:
 | Framework | Next.js 16.3+ (App Router) | Rilis aman yang memperbaiki advisory dependency dan memakai `proxy.ts` untuk boundary jaringan |
 | AI content generation | Gemini API — model tier **Flash** (bukan Pro) | Free tier Flash punya kuota harian jauh lebih besar dari Pro, dan task ini (nulis ulang narasi dari struktur, bukan reasoning berat) nggak butuh Pro. ⚠️ Cek model ID terbaru di [ai.google.dev/pricing](https://ai.google.dev/pricing) pas mulai build — lineup Gemini sering ganti nama (2.5 Flash / 3 Flash / Flash-Lite dst), yang penting ambil tier "Flash", bukan "Pro" |
 | Docx generation | npm package `docx` (MIT, gratis, sudah dipakai internal Anthropic juga) | Full kontrol margin/font/spacing/image lewat kode, nggak bergantung ke fitur berbayar (docxtemplater versi gratis nggak support auto-embed gambar — fitur itu ada di paid add-on mereka. Karena foto adalah elemen wajib di format Kemenag, `docx` library lebih pas) |
-| Hosting | Vercel (free tier) | Sama kayak Public Insight |
+| Hosting | Render Native Node.js, region Singapura | Mendukung Next.js penuh, health check, secret server-side, dan deploy langsung dari GitHub tanpa Docker lokal |
 | Auth | Password bersama + JWT cookie 8 jam (`jose`) | `proxy.ts` memberi redirect cepat dan setiap route mengulangi verifikasi sesi sebagai boundary keamanan |
 | Rate-limit | Upstash Redis REST | Login 5/15 menit/IP, generate 20/jam/sesi+IP dan 100/hari global, export 60/jam/sesi+IP |
 | Database | **Tidak ada di V2** (stateless) | Nggak butuh — generate & download langsung. Kalau nanti mau history/riwayat (§10 PRD), baru tambah Neon Postgres, dan bisa reuse skema dari Public Insight |
@@ -87,7 +87,9 @@ Ini bukan dari screenshot — ini diambil langsung dari XML internal file `Kemen
    ▼
 [Preflight] → 422 INCOMPLETE_INPUT bila fakta inti kurang
    │
-[Gemini generate → Gemini fact audit → optional repair sekali → audit ulang]
+[Gemini generate → audit fakta → optional repair sekali → audit ulang]
+   │  3.6 Flash utama; Flash-Lite untuk timeout/503/429 pada project yang sama
+   │  credential backup hanya untuk auth failover, bukan rotasi kuota lintas project
    │
 [Ordered block editor + checklist + quote approval]
    │  POST /api/export-docx (foto wajib)
