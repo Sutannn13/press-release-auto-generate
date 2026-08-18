@@ -1,0 +1,227 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* Bersihkan indikator native bila input type="date" masih dipakai di tempat lain. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.55;
+  cursor: pointer;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--forest) 22%, transparent);
+  color: var(--forest-deep);
+}
+
+/* Scrollbar tipis bernuansa warm, menggantikan scrollbar default OS. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--forest) 28%, var(--border));
+  border-radius: 999px;
+  border: 2px solid var(--background);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--forest) 45%, var(--border));
+}
+html {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--forest) 28%, var(--border)) transparent;
+}
+
+/* Sweep cahaya premium untuk tombol aksi utama. */
+@keyframes shine-sweep {
+  0% {
+    transform: translateX(-120%) skewX(-16deg);
+  }
+  55%,
+  100% {
+    transform: translateX(240%) skewX(-16deg);
+  }
+}
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 45%;
+  background: linear-gradient(
+    105deg,
+    transparent,
+    color-mix(in oklab, white 32%, transparent),
+    transparent
+  );
+  transform: translateX(-120%) skewX(-16deg);
+  pointer-events: none;
+}
+.btn-shine:hover::after {
+  animation: shine-sweep 0.9s ease-out;
+}
+
+/* Fade-up halus untuk elemen yang masuk viewport. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out both;
+}
+
+/* Lambat, halus — dipakai oleh blob background dekoratif. */
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@theme inline {
+  --font-heading: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-newsreader), Georgia, "Times New Roman", serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Aksen kustom Green Authority (gold + skala forest). */
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-forest: var(--forest);
+  --color-forest-deep: var(--forest-deep);
+  --color-forest-light: var(--forest-light);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* netral warm (bukan slate dingin) */
+  --background: #fbf9f4;
+  --foreground: #1b1a15;
+  --card: #ffffff;
+  --card-foreground: #1b1a15;
+  --popover: #ffffff;
+  --popover-foreground: #1b1a15;
+  --muted: #f2ede2;
+  --muted-foreground: #6e6857;
+  --secondary: #ede7d8;
+  --secondary-foreground: #2a2820;
+  --accent: #e7f0ea;
+  --accent-foreground: #0e5a3f;
+
+  /* primary = deep forest green Kemenag */
+  --primary: #0e5a3f;
+  --primary-foreground: #f7f5ef;
+
+  /* destructive (asterisk wajib + error) */
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+
+  /* border & ring warm */
+  --border: #e4dcc9;
+  --input: #d8cfb8;
+  --ring: #0e5a3f;
+
+  --radius: 0.75rem;
+
+  /* aksen kustom */
+  --gold: #b8941f;
+  --gold-light: #c9a227;
+  --forest: #0e5a3f;
+  --forest-deep: #0a3f2b;
+  --forest-light: #1f7a57;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}

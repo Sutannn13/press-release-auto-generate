@@ -1,0 +1,168 @@
+- generic:
+  - main:
+    - generic:
+      - generic:
+        - generic:
+          - paragraph: Kantor Kementerian Agama Kota Depok
+        - heading [level=1]: Auto Press Release Generator
+        - paragraph: Isi fakta kegiatan, generate draf, periksa dan edit hasilnya, lalu download dokumen Word dengan format resmi.
+        - generic:
+          - list:
+            - listitem:
+              - generic: "1"
+              - generic: Isi data 5W1H
+            - listitem:
+              - generic: "2"
+              - generic: Review & edit
+            - listitem:
+              - generic: "3"
+              - generic: Download DOCX
+      - generic:
+        - generic:
+          - generic:
+            - paragraph: Data kegiatan
+            - heading [level=2]: Formula press release
+            - paragraph: AI hanya akan menggunakan fakta yang diisi di bawah ini. Tanda bintang menunjukkan field wajib.
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - text: Nama kegiatan
+                  - generic: "*"
+              - textbox:
+                - /placeholder: Bimbingan Remaja Usia Sekolah (BRUS)
+          - generic:
+            - generic:
+              - generic: Tema (opsional)
+              - textbox:
+                - /placeholder: Gaul & Batas Pergaulan dalam Islam
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - text: Peserta
+                  - generic: "*"
+              - textbox:
+                - /placeholder: 30 siswa/i Ponpes Hidayatullah
+          - generic:
+            - generic:
+              - generic: Pemateri (jika ada)
+              - textbox:
+                - /placeholder: Penyuluh Bu Siti Habibah
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - text: Tanggal
+                  - generic: "*"
+              - button:
+                - generic: Jumat, 14 Agustus 2026
+              - paragraph: "Akan tercetak: Jumat (14/08/2026)"
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - text: Lokasi lengkap
+                  - generic: "*"
+              - textbox:
+                - /placeholder: Aula Kantor Kemenag Kota Depok
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - text: Lokasi dateline
+                  - generic: "*"
+              - combobox [expanded]:
+                - generic: Pilih lokasi dateline
+              - combobox
+              - paragraph: "Dipakai pada pembuka: DEPOK (KEMENAG) –"
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - text: Jalannya kegiatan
+                  - generic: "*"
+              - textbox:
+                - /placeholder: Kegiatan berjalan lancar dan peserta mendengarkan dengan aktif...
+          - generic:
+            - generic:
+              - generic: Poin materi (opsional)
+              - textbox:
+                - /placeholder: Tuliskan poin-poin materi jika tersedia. Jika kosong, AI tidak akan mengarangnya.
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - text: Foto kegiatan
+                  - generic: "*"
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: Klik atau seret foto ke sini
+                    - generic: JPG / PNG
+                  - button
+              - paragraph: JPG/PNG, maksimal 5 MB. Foto tercetak center di bawah judul (lebar 12 cm). Wajib untuk download.
+        - generic:
+          - generic:
+            - paragraph: Narasumber
+            - heading [level=2]: Kutipan langsung
+            - paragraph: Minimal satu kutipan. Nama dan jabatan tidak akan dikembangkan oleh AI.
+          - generic:
+            - button: Tambah kutipan
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: "1"
+                    - text: Kutipan 1
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: Nama narasumber
+                        - generic: "*"
+                    - textbox:
+                      - /placeholder: H. Sholahudin Al Ayubi
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: Jabatan
+                        - generic: "*"
+                    - textbox:
+                      - /placeholder: Kasi Bimas Islam
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: Isi kutipan
+                        - generic: "*"
+                    - textbox:
+                      - /placeholder: Tuliskan ucapan narasumber tanpa menambahkan atribusi.
+        - generic:
+          - generic:
+            - generic:
+              - text: Kontributor
+              - generic: "*"
+          - textbox:
+            - /placeholder: Nama kontributor/fotografer
+        - button: Generate draf
+      - generic:
+        - paragraph: Tool internal Humas Kementerian Agama Kota Depok. Selalu lakukan review manusia sebelum publikasi.
+  - button "Open Next.js Dev Tools" [ref=e160] [cursor=pointer]
+  - alert
+  - listbox [ref=e221]:
+    - option "DEPOK" [active] [ref=e222]
+    - option "BEJI" [ref=e224]
+    - option "CIMANGGIS" [ref=e226]
+    - option "CILODONG" [ref=e228]
+    - option "CINERE" [ref=e230]
+    - option "CIPAYUNG" [ref=e232]
+    - option "BOJONGSARI" [ref=e234]
+    - option "LIMO" [ref=e236]
+    - option "PANCORAN MAS" [ref=e238]
+    - option "SAWANGAN" [ref=e240]
+    - option "SUKMAJAYA" [ref=e242]
+    - option "TAPOS" [ref=e244]
+    - option "Lainnya…" [ref=e246]

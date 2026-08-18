@@ -1,0 +1,119 @@
+- main [ref=f2e2]:
+  - generic [ref=f2e3]:
+    - generic [ref=f2e4]:
+      - paragraph [ref=f2e10]: Kantor Kementerian Agama Kota Depok
+      - heading "Auto Press Release Generator" [level=1] [ref=f2e11]
+      - paragraph [ref=f2e12]: Isi fakta kegiatan, generate draf, periksa dan edit hasilnya, lalu download dokumen Word dengan format resmi.
+      - list [ref=f2e14]:
+        - listitem [ref=f2e15]:
+          - generic [ref=f2e16]: "1"
+          - generic [ref=f2e17]: Isi data 5W1H
+        - listitem [ref=f2e18]:
+          - generic [ref=f2e19]: "2"
+          - generic [ref=f2e20]: Review & edit
+        - listitem [ref=f2e21]:
+          - generic [ref=f2e22]: "3"
+          - generic [ref=f2e23]: Download DOCX
+    - generic [ref=f2e24]:
+      - generic [ref=f2e30]:
+        - paragraph [ref=f2e31]: Data kegiatan
+        - heading "Formula press release" [level=2] [ref=f2e32]
+        - paragraph [ref=f2e33]: AI hanya akan menggunakan fakta yang diisi di bawah ini. Tanda bintang menunjukkan field wajib.
+      - generic [ref=f2e34]:
+        - generic [ref=f2e36]:
+          - generic [ref=f2e38]:
+            - text: Nama kegiatan
+            - generic [ref=f2e39]: "*"
+          - textbox "Nama kegiatan" [ref=f2e40]:
+            - /placeholder: Bimbingan Remaja Usia Sekolah (BRUS)
+        - generic [ref=f2e42]:
+          - generic [ref=f2e43]: Tema (opsional)
+          - textbox "Tema (opsional)" [ref=f2e45]:
+            - /placeholder: Gaul & Batas Pergaulan dalam Islam
+        - generic [ref=f2e47]:
+          - generic [ref=f2e49]:
+            - text: Peserta
+            - generic [ref=f2e50]: "*"
+          - textbox "Peserta" [ref=f2e51]:
+            - /placeholder: 30 siswa/i Ponpes Hidayatullah
+        - generic [ref=f2e53]:
+          - generic [ref=f2e54]: Pemateri (jika ada)
+          - textbox "Pemateri (jika ada)" [ref=f2e56]:
+            - /placeholder: Penyuluh Bu Siti Habibah
+        - generic [ref=f2e58]:
+          - generic [ref=f2e60]:
+            - text: Tanggal
+            - generic [ref=f2e61]: "*"
+          - button "Tanggal" [ref=f2e62]:
+            - generic [ref=f2e65]: Pilih tanggal kegiatan
+        - generic [ref=f2e67]:
+          - generic [ref=f2e69]:
+            - text: Lokasi lengkap
+            - generic [ref=f2e70]: "*"
+          - textbox "Lokasi lengkap" [ref=f2e71]:
+            - /placeholder: Aula Kantor Kemenag Kota Depok
+        - generic [ref=f2e73]:
+          - generic [ref=f2e75]:
+            - text: Lokasi dateline
+            - generic [ref=f2e76]: "*"
+          - combobox "Lokasi dateline" [ref=f2e77]:
+            - generic: Pilih lokasi dateline
+          - combobox [ref=f2e78]
+          - paragraph [ref=f2e79]: "Dipakai pada pembuka: DEPOK (KEMENAG) –"
+        - generic [ref=f2e81]:
+          - generic [ref=f2e83]:
+            - text: Jalannya kegiatan
+            - generic [ref=f2e84]: "*"
+          - textbox "Jalannya kegiatan" [ref=f2e85]:
+            - /placeholder: Kegiatan berjalan lancar dan peserta mendengarkan dengan aktif...
+        - generic [ref=f2e87]:
+          - generic [ref=f2e88]: Poin materi (opsional)
+          - textbox "Poin materi (opsional)" [ref=f2e90]:
+            - /placeholder: Tuliskan poin-poin materi jika tersedia. Jika kosong, AI tidak akan mengarangnya.
+        - generic [ref=f2e92]:
+          - generic [ref=f2e94]:
+            - text: Foto kegiatan
+            - generic [ref=f2e95]: "*"
+          - generic [ref=f2e97] [cursor=pointer]:
+            - generic [ref=f2e98]:
+              - generic [ref=f2e103]: Klik atau seret foto ke sini
+              - generic [ref=f2e104]: JPG / PNG
+            - button "Foto kegiatan Klik atau seret foto ke sini JPG / PNG" [ref=f2e105]
+          - paragraph [ref=f2e106]: JPG/PNG, maksimal 5 MB. Foto tercetak center di bawah judul (lebar 12 cm). Wajib untuk download.
+      - generic [ref=f2e107]:
+        - generic [ref=f2e112]:
+          - paragraph [ref=f2e113]: Narasumber
+          - heading "Kutipan langsung" [level=2] [ref=f2e114]
+          - paragraph [ref=f2e115]: Minimal satu kutipan. Nama dan jabatan tidak akan dikembangkan oleh AI.
+        - button "Tambah kutipan" [ref=f2e117]
+      - generic [ref=f2e121]:
+        - generic [ref=f2e123]:
+          - generic [ref=f2e124]: "1"
+          - text: Kutipan 1
+        - generic [ref=f2e125]:
+          - generic [ref=f2e126]:
+            - generic [ref=f2e128]:
+              - text: Nama narasumber
+              - generic [ref=f2e129]: "*"
+            - textbox "Nama narasumber" [ref=f2e130]:
+              - /placeholder: H. Sholahudin Al Ayubi
+          - generic [ref=f2e131]:
+            - generic [ref=f2e133]:
+              - text: Jabatan
+              - generic [ref=f2e134]: "*"
+            - textbox "Jabatan" [ref=f2e135]:
+              - /placeholder: Kasi Bimas Islam
+          - generic [ref=f2e136]:
+            - generic [ref=f2e138]:
+              - text: Isi kutipan
+              - generic [ref=f2e139]: "*"
+            - textbox "Isi kutipan" [ref=f2e140]:
+              - /placeholder: Tuliskan ucapan narasumber tanpa menambahkan atribusi.
+      - generic [ref=f2e141]:
+        - generic [ref=f2e143]:
+          - text: Kontributor
+          - generic [ref=f2e144]: "*"
+        - textbox "Kontributor" [ref=f2e145]:
+          - /placeholder: Nama kontributor/fotografer
+      - button "Generate draf" [ref=f2e146]
+    - paragraph [ref=f2e148]: Tool internal Humas Kementerian Agama Kota Depok. Selalu lakukan review manusia sebelum publikasi.
