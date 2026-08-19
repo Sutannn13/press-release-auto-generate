@@ -1,37 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
-import { randomUUID } from "node:crypto";
-import { SignJWT } from "jose";
-import { BROWSER_TEST_SECRET } from "../../playwright.config";
-
-const BASE_URL = "http://localhost:3100";
-
-async function sessionToken(): Promise<string> {
-  return new SignJWT({ role: "staff", sid: randomUUID() })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("8h")
-    .setIssuer("kemenag-depok-press-release")
-    .setAudience("kemenag-depok-staff")
-    .sign(new TextEncoder().encode(BROWSER_TEST_SECRET));
-}
 
 async function selectOption(page: Page, label: string, option: string) {
   await page.getByLabel(label).click();
   await page.getByRole("option", { name: option, exact: true }).click();
 }
 
-test("alur browser V2: auth, autosave, form dinamis, review, dan download", async ({ page, context }) => {
+test("alur browser V2: akses langsung, autosave, form dinamis, review, dan download", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveURL(/\/login$/);
-
-  await context.addCookies([{
-    name: "kemenag_session",
-    value: await sessionToken(),
-    url: BASE_URL,
-    httpOnly: true,
-    sameSite: "Strict",
-  }]);
-  await page.goto("/");
+  await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { name: "Press Release Generator V2" })).toBeVisible();
 
   await page.getByLabel("Nama kegiatan (What)").fill("Bimbingan Remaja Usia Sekolah (BRUS)");

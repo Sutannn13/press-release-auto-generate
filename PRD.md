@@ -33,14 +33,13 @@ Masalahnya dua lapis:
 ## 5. Alur Pemakaian (User Flow)
 
 ```
-1. Login memakai password internal
-2. Isi field inti 5W+1H dan detail dinamis
-3. Klik "Generate"; data inti yang kurang ditolak dengan field terarah
-4. AI menyusun draf adaptif, auditor AI memeriksa fakta, dan sistem memperbaiki maksimal sekali
-5. Review ordered blocks dan checklist 5W+1H
-6. Pilih serta setujui versi setiap kutipan
-7. Pilih foto lalu klik "Download .docx"
-8. Review sekali lagi → upload manual ke website Kemenag
+1. Buka aplikasi dan langsung isi field inti 5W+1H serta detail dinamis
+2. Klik "Generate"; data inti yang kurang ditolak dengan field terarah
+3. AI menyusun draf adaptif, auditor AI memeriksa fakta, dan sistem memperbaiki maksimal sekali
+4. Review ordered blocks dan checklist 5W+1H
+5. Pilih serta setujui versi setiap kutipan
+6. Pilih foto lalu klik "Download .docx"
+7. Review sekali lagi → upload manual ke website Kemenag
 ```
 
 Langkah 5-6 (preview + edit) itu penting — bukan langsung "generate → download" tanpa jeda, karena press release itu dokumen resmi, harus ada kesempatan koreksi sebelum jadi file.
@@ -79,7 +78,7 @@ Berdasarkan formula yang lo kasih, ini field-nya dipecah biar bisa diproses AI +
 - **FR3** — Preview ordered blocks, checklist 5W+1H, approval kutipan, dan autosave browser tujuh hari.
 - **FR4** — Export ke `.docx` dengan format persis sesuai ARCHITECTURE.md (margin, font, spacing, justify, quote italic).
 - **FR5** — Upload foto saat export dan embed proporsional tanpa distorsi.
-- **FR6** — Password bersama, cookie session, same-origin guard, dan Redis rate-limit untuk deployment publik.
+- **FR6** — Akses langsung tanpa login, dengan same-origin guard dan Redis rate-limit berbasis IP untuk deployment publik.
 - **FR7** — Artikel memiliki minimal lima paragraf di luar kutipan; setiap paragraf membawa fungsi dan fakta berbeda. Input yang terlalu tipis ditolak, bukan dipanjangkan dengan kalimat generik.
 
 ## 9. Non-Functional Requirements
@@ -87,7 +86,7 @@ Berdasarkan formula yang lo kasih, ini field-nya dipecah biar bisa diproses AI +
 - **Biaya:** mengikuti instance Render, penggunaan Gemini, dan Upstash; tidak ada database aplikasi karena V2 stateless.
 - **Kecepatan:** waktu mengikuti dua audit AI; UI harus menunjukkan status proses dan tidak mengulang tanpa batas.
 - **Reliability format:** file yang keluar harus selalu bisa dibuka normal di Word tanpa "repair document" warning.
-- **Akses:** URL Render bersifat publik tetapi seluruh halaman dan API aplikasi dilindungi password bersama, sesi bertanda tangan, same-origin guard, dan rate-limit. Password produksi harus panjang dan unik.
+- **Akses:** URL Render bersifat publik dan langsung membuka form. API tetap memakai same-origin guard dan rate-limit berbasis IP.
 
 ## 10. Sinergi dengan Project Lain (catatan, bukan scope V2)
 

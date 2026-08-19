@@ -20,8 +20,8 @@ Ada 3 opsi yang gw timbang:
 | AI content generation | Gemini API — model tier **Flash** (bukan Pro) | Free tier Flash punya kuota harian jauh lebih besar dari Pro, dan task ini (nulis ulang narasi dari struktur, bukan reasoning berat) nggak butuh Pro. ⚠️ Cek model ID terbaru di [ai.google.dev/pricing](https://ai.google.dev/pricing) pas mulai build — lineup Gemini sering ganti nama (2.5 Flash / 3 Flash / Flash-Lite dst), yang penting ambil tier "Flash", bukan "Pro" |
 | Docx generation | npm package `docx` (MIT, gratis, sudah dipakai internal Anthropic juga) | Full kontrol margin/font/spacing/image lewat kode, nggak bergantung ke fitur berbayar (docxtemplater versi gratis nggak support auto-embed gambar — fitur itu ada di paid add-on mereka. Karena foto adalah elemen wajib di format Kemenag, `docx` library lebih pas) |
 | Hosting | Render Native Node.js, region Singapura | Mendukung Next.js penuh, health check, secret server-side, dan deploy langsung dari GitHub tanpa Docker lokal |
-| Auth | Password bersama + JWT cookie 8 jam (`jose`) | `proxy.ts` memberi redirect cepat dan setiap route mengulangi verifikasi sesi sebagai boundary keamanan |
-| Rate-limit | Upstash Redis REST | Login 5/15 menit/IP, generate 20/jam/sesi+IP dan 100/hari global, export 60/jam/sesi+IP |
+| Akses | Langsung ke form tanpa login | Aplikasi dipakai satu operator; bookmark lama `/login` dialihkan ke form utama |
+| Rate-limit | Upstash Redis REST | Generate 20/jam/IP dan 100/hari global, export 60/jam/IP |
 | Database | **Tidak ada di V2** (stateless) | Nggak butuh — generate & download langsung. Kalau nanti mau history/riwayat (§10 PRD), baru tambah Neon Postgres, dan bisa reuse skema dari Public Insight |
 
 ## 3. Kenapa Programmatic (`docx` lib), Bukan Template-Fill
@@ -80,7 +80,7 @@ Ini bukan dari screenshot — ini diambil langsung dari XML internal file `Kemen
 ## 5. Alur Sistem (Data Flow)
 
 ```
-[Login + signed cookie + Redis rate-limit]
+[Form langsung + Redis rate-limit berbasis IP]
    │
 [Form inti 5W1H + detail dinamis]
    │  POST /api/generate
@@ -112,23 +112,21 @@ Ini bukan dari screenshot — ini diambil langsung dari XML internal file `Kemen
 
 ## 7. Boundary keamanan
 
-- `proxy.ts` melindungi halaman dan API, tetapi bukan satu-satunya boundary; setiap route memverifikasi sesi kembali.
+- `proxy.ts` mengalihkan bookmark lama `/login` ke halaman utama; form dapat diakses langsung.
 - Semua POST memeriksa same-origin, ukuran request, dan mengirim `Cache-Control: no-store`.
-- Login dibatasi 5 percobaan/15 menit/IP dan fail-closed dengan 503 bila Redis tidak tersedia.
-- Generate dibatasi 20/jam/sesi+IP serta 100/hari global; export 60/jam/sesi+IP.
-- Pengguna terautentikasi tetap dapat generate/export bila Redis timeout setelah satu detik; kondisi ini dilog sebagai kategori degradasi tanpa isi berita.
-- Log hanya berisi request ID, route, status, durasi, dan kategori error. Password, cookie, token, API key, teks berita, kutipan, serta foto tidak dicatat.
-- Cookie sesi ditandatangani HS256, berlaku delapan jam, `httpOnly`, `SameSite=Strict`, dan `Secure` pada production.
+- Generate dibatasi 20/jam/IP serta 100/hari global; export 60/jam/IP.
+- Generate/export mengembalikan 503 bila Redis tidak tersedia agar endpoint publik tidak berjalan tanpa pembatasan.
+- Log hanya berisi request ID, route, status, durasi, dan kategori error. Token, API key, teks berita, kutipan, serta foto tidak dicatat.
 - Security headers meliputi HSTS production, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, dan `Permissions-Policy`.
 
 ## 8. Struktur Folder
 
 ```
 kemenag-pressrelease-ai/
-├── app/                         # form, login, generate/export/auth routes
+├── app/                         # form dan route generate/export/health
 ├── components/                  # form dinamis, checklist, dan editor
-├── lib/                         # prompt, audit, validasi, sesi, rate-limit, DOCX
-├── scripts/                     # unit/API/security/DOCX/live/golden checks
+├── lib/                         # prompt, audit, validasi, rate-limit, DOCX
+├── scripts/                     # unit/API/DOCX/live/golden checks
 ├── tests/browser/               # Playwright E2E
 ├── proxy.ts                     # redirect/401 cepat untuk route terlindungi
 └── .env.example                 # daftar env tanpa secret

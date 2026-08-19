@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowDown,
@@ -11,7 +10,6 @@ import {
   Download,
   FileText,
   Loader2,
-  LogOut,
   Plus,
   Quote,
   RotateCcw,
@@ -180,7 +178,6 @@ async function apiError(response: Response): Promise<{ message: string; details:
 }
 
 export default function Home() {
-  const router = useRouter();
   const [form, setForm] = useState<FormState>(() => initialForm());
   const [foto, setFoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<GeneratedPressRelease | null>(null);
@@ -345,10 +342,6 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
       });
-      if (response.status === 401) {
-        router.replace("/login");
-        return;
-      }
       if (!response.ok) {
         const details = await apiError(response);
         setErrorDetails(details.details);
@@ -451,10 +444,6 @@ export default function Home() {
         kontributor: form.kontributor.trim(),
       }));
       const response = await fetch("/api/export-docx", { method: "POST", body: data });
-      if (response.status === 401) {
-        router.replace("/login");
-        return;
-      }
       if (!response.ok) throw new Error((await apiError(response)).message);
       const url = URL.createObjectURL(await response.blob());
       const anchor = document.createElement("a");
@@ -469,12 +458,6 @@ export default function Home() {
     } finally {
       setIsDownloading(false);
     }
-  }
-
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/login");
-    router.refresh();
   }
 
   function resetDraft() {
@@ -512,7 +495,6 @@ export default function Home() {
             </div>
             <div className="flex gap-2">
               <Button type="button" variant="outline" onClick={resetDraft}><RotateCcw /> Reset draf</Button>
-              <Button type="button" variant="outline" onClick={logout}><LogOut /> Keluar</Button>
             </div>
           </div>
           <div className="mt-6"><Stepper /></div>

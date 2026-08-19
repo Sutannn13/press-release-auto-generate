@@ -11,10 +11,9 @@
     "test:gemini": "tsx scripts/test-gemini.ts",
     "test:gemini:live": "node --env-file-if-exists=.env.local --import tsx scripts/test-gemini-live.ts",
     "test:api": "node --env-file-if-exists=.env.local --import tsx scripts/test-api-routes.ts && python scripts/validate-docx.py artifacts/phase-4/api-export.docx 1",
-    "test:security": "tsx scripts/test-security.ts",
     "test:browser": "npm run build && playwright test",
     "test:golden": "npm run test:docx && python scripts/audit-golden-geber.py",
-    "test:v2": "npm run test:gemini && npm run test:security && npm run test:docx && npm run test:api"
+    "test:v2": "npm run test:gemini && npm run test:docx && npm run test:api"
   },
   "dependencies": {
     "@google/genai": "^2.16.0",
@@ -23,7 +22,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "docx": "^9.7.1",
-    "jose": "^6.2.9",
     "lucide-react": "^1.31.0",
     "motion": "^13.1.0",
     "next": "^16.3.1",

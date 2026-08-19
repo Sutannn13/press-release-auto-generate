@@ -16,7 +16,7 @@ Target deployment utama adalah **Render Web Service Native Node.js** di region S
 - Kutipan asli terkunci, versi rapih terpisah, dan persetujuan manusia wajib.
 - Preview editable, checklist 5W+1H, autosave browser tujuh hari, serta reset draf.
 - DOCX A4/Calibri 12/justify dengan foto proporsional dan kutipan italic.
-- Password bersama, sesi cookie delapan jam, same-origin guard, dan Upstash Redis rate-limit.
+- Akses langsung tanpa login, dengan same-origin guard dan Upstash Redis rate-limit berbasis IP.
 
 ## Menjalankan lokal
 
@@ -24,7 +24,7 @@ Target deployment utama adalah **Render Web Service Native Node.js** di region S
 2. Jalankan `npm install`.
 3. Jalankan `npm run dev` lalu buka `http://localhost:3000`.
 
-`SESSION_SECRET` minimal 32 karakter. Login sengaja gagal dengan status 503 jika password, session secret, atau Redis belum dikonfigurasi.
+Tidak ada password atau sesi login. Saat URL aplikasi dibuka, pengguna langsung masuk ke form generator.
 
 Endpoint `GET /api/health` dipakai hosting sebagai readiness check. Endpoint hanya mengembalikan `ok` atau `unavailable` dan tidak membuka nilai konfigurasi.
 

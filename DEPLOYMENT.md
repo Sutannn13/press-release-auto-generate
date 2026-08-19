@@ -8,7 +8,6 @@ Target utama aplikasi ini adalah **Render Web Service** dengan runtime Native No
 2. Akun Render yang terhubung ke repository GitHub.
 3. Project Gemini API dan minimal satu API key aktif.
 4. Database Upstash Redis dengan REST API aktif.
-5. Password akses aplikasi yang panjang dan unik.
 
 Aplikasi tidak membutuhkan database SQL, object storage, maupun persistent disk. Draf tersimpan selama tujuh hari di penyimpanan lokal browser. Foto hanya dikirim saat membuat DOCX dan tidak disimpan oleh aplikasi.
 
@@ -20,7 +19,7 @@ Aplikasi tidak membutuhkan database SQL, object storage, maupun persistent disk.
 - file hasil tes di `artifacts`
 - dokumen sumber yang berada di folder Downloads
 
-Semua item tersebut sudah dikecualikan dari Git atau dibuat ulang oleh Render saat build. Jangan menaruh API key, token Redis, session secret, atau password di source code, `render.yaml`, README, maupun commit Git.
+Semua item tersebut sudah dikecualikan dari Git atau dibuat ulang oleh Render saat build. Jangan menaruh API key atau token Redis di source code, `render.yaml`, README, maupun commit Git.
 
 ## 1. Siapkan Gemini
 
@@ -42,7 +41,7 @@ Model produksi sudah ditentukan oleh Blueprint:
    - `UPSTASH_REDIS_REST_URL`
    - `UPSTASH_REDIS_REST_TOKEN`
 
-Redis hanya menyimpan counter rate-limit. Naskah, kutipan, password, foto, dan API key tidak disimpan di Redis.
+Redis hanya menyimpan counter rate-limit. Naskah, kutipan, foto, dan API key tidak disimpan di Redis.
 
 ## 3. Push source code ke GitHub
 
@@ -72,11 +71,8 @@ Workflow `.github/workflows/ci.yml` akan mengulang lint, type-check, tes V2, bui
 | Environment variable | Isi |
 |---|---|
 | `GEMINI_API_KEY_PRIMARY` | API key Gemini |
-| `APP_ACCESS_PASSWORD` | Password produksi minimal 16 karakter, unik, dan tidak dipakai di layanan lain |
 | `UPSTASH_REDIS_REST_URL` | URL REST dari Upstash |
 | `UPSTASH_REDIS_REST_TOKEN` | Token REST dari Upstash |
-
-`SESSION_SECRET` dibuat acak secara otomatis oleh Render. Jangan menggantinya dengan password login.
 
 Blueprint menggunakan instance `free` agar deployment pilot tidak langsung menimbulkan biaya. Free instance bukan pilihan produksi yang selalu siap: setelah 15 menit tanpa traffic, instance akan tidur dan permintaan pertama dapat menunggu sekitar satu menit. Jika alur sudah lolos smoke test dan akan dipakai rutin oleh kantor, ubah `plan: free` menjadi `plan: starter`, commit, lalu sinkronkan ulang Blueprint.
 
@@ -93,19 +89,17 @@ Jika hasilnya HTTP 503, periksa kembali seluruh secret. Endpoint tidak menguji k
 
 Lanjutkan smoke test melalui domain Render:
 
-1. Login dengan password produksi.
+1. Buka URL aplikasi dan pastikan form generator langsung tampil.
 2. Isi satu kegiatan uji yang tidak mengandung data rahasia.
 3. Generate draf dan tunggu sampai audit selesai.
 4. Review seluruh fakta.
 5. Unggah foto uji dan download DOCX.
 6. Buka DOCX serta pastikan judul, foto, paragraf, kutipan, dan kontributor tampil benar.
-7. Logout, lalu pastikan halaman utama kembali meminta login.
 
 ## 6. Operasional
 
 - Setiap push ke branch utama menjalankan GitHub Actions. Deploy baru berjalan setelah checks lulus.
 - Cek log Render jika generate menerima 502/503/504 atau memerlukan waktu terlalu lama.
-- Rotasi password bersama jika diketahui pihak di luar tim.
 - Rotasi API key/token segera jika pernah masuk commit atau dibagikan di tempat publik.
 - Pantau kuota Gemini serta penggunaan Upstash.
 - Jangan aktifkan preview deployment yang membawa secret produksi.
@@ -116,4 +110,4 @@ Jika Render tidak dapat digunakan, Railway juga dapat membangun aplikasi Node.js
 
 ## Rollback
 
-Jika versi baru bermasalah, buka halaman **Deploys** pada service Render lalu pilih deploy terakhir yang stabil dan lakukan rollback. Jangan menghapus Upstash atau mengganti `SESSION_SECRET` saat rollback kecuali memang ingin mengakhiri seluruh sesi pengguna.
+Jika versi baru bermasalah, buka halaman **Deploys** pada service Render lalu pilih deploy terakhir yang stabil dan lakukan rollback. Jangan menghapus Upstash saat rollback agar counter rate-limit tetap tersedia.

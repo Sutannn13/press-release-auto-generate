@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit, rateLimitHeaders, type RateLimitKind } from "./rate-limit";
 import { getClientIp, isSameOrigin } from "./security";
-import { getRequestSession, type AppSession } from "./session";
 
 export type ApiGuardResult =
-  | { ok: true; session: AppSession; headers: HeadersInit }
+  | { ok: true; headers: HeadersInit }
   | { ok: false; response: NextResponse };
 
 export async function protectApi(
   request: Request,
-  kind: Exclude<RateLimitKind, "login">,
+  kind: RateLimitKind,
 ): Promise<ApiGuardResult> {
   const noStore = { "Cache-Control": "no-store" };
   if (!isSameOrigin(request)) {
@@ -21,18 +20,16 @@ export async function protectApi(
       ),
     };
   }
-  const session = await getRequestSession(request);
-  if (!session) {
+  const decision = await checkRateLimit(kind, getClientIp(request));
+  if (decision.unavailable) {
     return {
       ok: false,
       response: NextResponse.json(
-        { error: "Sesi tidak valid atau sudah berakhir." },
-        { status: 401, headers: noStore },
+        { error: "Pembatas permintaan sedang tidak tersedia. Coba kembali sesaat lagi." },
+        { status: 503, headers: noStore },
       ),
     };
   }
-  const identifier = `${session.sid}:${getClientIp(request)}`;
-  const decision = await checkRateLimit(kind, identifier, true);
   if (!decision.allowed) {
     return {
       ok: false,
@@ -44,9 +41,6 @@ export async function protectApi(
   }
   return {
     ok: true,
-    session,
-    headers: decision.unavailable
-      ? { ...noStore, "X-RateLimit-Degraded": "true" }
-      : { ...noStore, ...rateLimitHeaders(decision) },
+    headers: { ...noStore, ...rateLimitHeaders(decision) },
   };
 }

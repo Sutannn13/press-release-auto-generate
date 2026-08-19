@@ -17,10 +17,6 @@ services:
         value: gemini-3.6-flash
       - key: GEMINI_MODEL_FALLBACK
         value: gemini-3.5-flash-lite
-      - key: APP_ACCESS_PASSWORD
-        sync: false
-      - key: SESSION_SECRET
-        generateValue: true
       - key: UPSTASH_REDIS_REST_URL
         sync: false
       - key: UPSTASH_REDIS_REST_TOKEN

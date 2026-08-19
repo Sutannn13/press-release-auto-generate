@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getGeminiRoutingInfo } from "@/lib/gemini";
 import { redisConfigured } from "@/lib/rate-limit";
-import { securityConfigured } from "@/lib/security";
 
 export const runtime = "nodejs";
 
@@ -14,7 +13,7 @@ function geminiConfigured(): boolean {
 }
 
 export function GET() {
-  const ready = securityConfigured() && redisConfigured() && geminiConfigured();
+  const ready = redisConfigured() && geminiConfigured();
   return NextResponse.json(
     { status: ready ? "ok" : "unavailable" },
     {

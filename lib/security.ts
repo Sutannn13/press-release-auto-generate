@@ -1,21 +1,3 @@
-import { createHash, timingSafeEqual } from "node:crypto";
-
-export function securityConfigured(): boolean {
-  return Boolean(
-    process.env.APP_ACCESS_PASSWORD?.trim() &&
-      process.env.SESSION_SECRET?.trim() &&
-      process.env.SESSION_SECRET.trim().length >= 32,
-  );
-}
-
-export function verifyAccessPassword(candidate: string): boolean {
-  const expected = process.env.APP_ACCESS_PASSWORD?.trim();
-  if (!expected) return false;
-  const left = createHash("sha256").update(candidate).digest();
-  const right = createHash("sha256").update(expected).digest();
-  return timingSafeEqual(left, right);
-}
-
 export function getClientIp(request: Request): string {
   return (
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||

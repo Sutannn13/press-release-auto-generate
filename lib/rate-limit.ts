@@ -1,7 +1,7 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-export type RateLimitKind = "login" | "generate" | "export";
+export type RateLimitKind = "generate" | "export";
 
 export interface RateLimitDecision {
   allowed: boolean;
@@ -12,7 +12,6 @@ export interface RateLimitDecision {
 }
 
 interface Limiters {
-  login: Ratelimit;
   generate: Ratelimit;
   generateGlobal: Ratelimit;
   export: Ratelimit;
@@ -34,12 +33,6 @@ function getLimiters(): Limiters {
   if (!url || !token) throw new Error("Konfigurasi Redis belum lengkap.");
   const redis = new Redis({ url, token });
   limiters = {
-    login: new Ratelimit({
-      redis,
-      prefix: "kemenag:login",
-      limiter: Ratelimit.slidingWindow(5, "15 m"),
-      timeout: 1_000,
-    }),
     generate: new Ratelimit({
       redis,
       prefix: "kemenag:generate",
@@ -89,21 +82,18 @@ function toDecision(result: Awaited<ReturnType<Ratelimit["limit"]>>): RateLimitD
 export async function checkRateLimit(
   kind: RateLimitKind,
   identifier: string,
-  authenticated: boolean,
 ): Promise<RateLimitDecision> {
   const mocked = testDecision();
   if (mocked) return mocked;
   if (!redisConfigured()) {
-    return authenticated
-      ? { allowed: true, unavailable: true, limit: 0, remaining: 0, reset: Date.now() }
-      : { allowed: false, unavailable: true, limit: 0, remaining: 0, reset: Date.now() + 1_000 };
+    return { allowed: false, unavailable: true, limit: 0, remaining: 0, reset: Date.now() };
   }
   try {
     const active = getLimiters();
     if (kind === "generate") {
       const [personal, global] = await Promise.all([
         active.generate.limit(identifier),
-        active.generateGlobal.limit("all-authenticated-users"),
+        active.generateGlobal.limit("all-users"),
       ]);
       const restrictive = personal.success && global.success
         ? personal.remaining <= global.remaining ? personal : global
@@ -112,9 +102,7 @@ export async function checkRateLimit(
     }
     return toDecision(await active[kind].limit(identifier));
   } catch {
-    return authenticated
-      ? { allowed: true, unavailable: true, limit: 0, remaining: 0, reset: Date.now() }
-      : { allowed: false, unavailable: true, limit: 0, remaining: 0, reset: Date.now() + 1_000 };
+    return { allowed: false, unavailable: true, limit: 0, remaining: 0, reset: Date.now() };
   }
 }
 
